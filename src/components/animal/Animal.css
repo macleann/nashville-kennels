@@ -1,0 +1,18 @@
+.animal {
+    margin: 1rem;
+    border: dotted .1rem fuchsia ;
+    padding: .5rem;
+}
+
+.animal__header {
+    font-size: larger;
+}
+
+.animal__footer {
+    font-size: smaller;
+    font-style: italic;
+}
+
+.line__item {
+    margin: .3rem 0;
+}

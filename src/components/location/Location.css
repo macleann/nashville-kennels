@@ -1,0 +1,13 @@
+.location {
+    margin: 1rem;
+    border: dotted .1rem fuchsia ;
+    padding: .5rem;
+}
+
+.location__name {
+    font-size: large;
+}
+
+.line__item {
+    margin: .3rem 0;
+}
