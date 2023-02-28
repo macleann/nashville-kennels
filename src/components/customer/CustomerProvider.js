@@ -19,7 +19,7 @@ export const CustomerProvider = (props) => {
             },
             body: JSON.stringify(customerObj)
         })
-            .then(getCustomers)
+            .then(response => response.json())
     }
 
     return (

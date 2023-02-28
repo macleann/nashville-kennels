@@ -1,3 +1,8 @@
+.locations {
+    display: flex;
+    flex-direction: column;
+}
+
 .location {
     margin: 1rem;
     border: dotted .1rem fuchsia ;

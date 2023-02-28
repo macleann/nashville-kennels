@@ -1,16 +1,25 @@
 import { useContext, useEffect, useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import { LocationContext } from "./LocationProvider"
 
 export const LocationForm = () => {
-    const { addLocation } = useContext(LocationContext)
-
-    const [location, setLocation] = useState({
-        name: "",
-        address: ""
-    })
-
+    const { addLocation, getLocationById, updateLocation } = useContext(LocationContext)
+    const [location, setLocation] = useState({})
+    const [isLoading, setIsLoading] = useState(true)
+    const { locationId } = useParams()
     const navigate = useNavigate()
+
+    useEffect(() => {
+      if (locationId) {
+        getLocationById(locationId)
+          .then(location => {
+            setLocation(location)
+            setIsLoading(false)
+          })
+      } else {
+        setIsLoading(false)
+      }
+    }, [])
 
     const handleControlledInputChange = (evt) => {
         const newLocation = {...location}
@@ -20,19 +29,33 @@ export const LocationForm = () => {
 
     const handleClickSaveLocation = (evt) => {
         evt.preventDefault()
-
-        const newLocation = {
+        setIsLoading(true)
+        
+        if (locationId) {
+          updateLocation({
+            id: location.id,
             name: location.name,
             address: location.address
-        }
+          })
+            .then(() => navigate(`/locations/detail/${location.id}`))
+        } else {
+          const newLocation = {
+              name: location.name,
+              address: location.address
+          }
 
-        addLocation(newLocation)
+          addLocation(newLocation)
             .then(() => navigate("/locations"))
+        }
     }
 
     return (
         <form className="locationForm">
-          <h2 className="locationForm__title">New Location</h2>
+          {
+            locationId ?
+            <h2 className="locationForm__title">Update {location.name} Location</h2> :
+            <h2 className="locationForm__title">New Location</h2>
+          }
           <fieldset>
             <div className="form-group">
               <label htmlFor="name">Location name:</label>
@@ -45,9 +68,18 @@ export const LocationForm = () => {
               <input type="text" id="address" required autoFocus className="form-control" placeholder="Location address" value={location.address} onChange={handleControlledInputChange} />
             </div>
           </fieldset>
-          <button className="btn btn-primary" onClick={handleClickSaveLocation}>
-            Add Location
-              </button>
+          <button className="btn btn-primary"
+            disabled={isLoading}
+            onClick={(evt) => {
+              evt.preventDefault()
+              handleClickSaveLocation(evt)
+          }}>
+            {
+              locationId ?
+              <>Update Location</> :
+              <>Add Location</>
+            }
+          </button>
         </form>
       )
 }

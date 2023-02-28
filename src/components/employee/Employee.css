@@ -1,3 +1,8 @@
+.employees {
+    display: flex;
+    flex-direction: column;
+}
+
 .employee {
     margin: 1rem;
     border: dotted .1rem fuchsia ;

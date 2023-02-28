@@ -1,25 +1,32 @@
 import { useContext, useEffect, useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import { CustomerContext } from "../customer/CustomerProvider"
 import { LocationContext } from "../location/LocationProvider"
 import { AnimalContext } from "./AnimalProvider"
 
 export const AnimalForm = () => {
-    const { addAnimal } = useContext(AnimalContext)
+    const { addAnimal, getAnimalById, updateAnimal } = useContext(AnimalContext)
     const { locations, getLocations } = useContext(LocationContext)
     const { customers, getCustomers } = useContext(CustomerContext)
-
-    const [animal, setAnimal] = useState({
-        name: "",
-        breed: "",
-        locationId: 0,
-        customerId: 0
-    })
-
+    const [animal, setAnimal] = useState({})
+    const [isLoading, setIsLoading] = useState(true)
+    const { animalId } = useParams()
     const navigate = useNavigate()
 
     useEffect(() => {
-        getCustomers().then(getLocations())
+        getCustomers()
+          .then(getLocations())
+          .then(() => {
+            if (animalId) {
+              getAnimalById(animalId)
+                .then(animal => {
+                  setAnimal(animal)
+                  setIsLoading(false)
+                })
+            } else {
+              setIsLoading(false)
+            }
+          })
     }, [])
 
     const handleControlledInputChange = (evt) => {
@@ -31,27 +38,40 @@ export const AnimalForm = () => {
     const handleClickSaveAnimal = (evt) => {
         evt.preventDefault()
 
-        const locationId = parseInt(animal.locationId)
-        const customerId = parseInt(animal.customerId)
-
-        if (locationId === 0 || customerId === 0) {
+        if (parseInt(animal.locationId) === 0 || parseInt(animal.customerId) === 0) {
             window.alert("Please select a customer and a location")
         } else {
+          setIsLoading(true)
+          if (animalId) {
+            updateAnimal({
+              id: animal.id,
+              name: animal.name,
+              breed: animal.breed,
+              locationId: parseInt(animal.locationId),
+              customerId: parseInt(animal.customerId)
+            })
+              .then(() => navigate(`/animals/detail/${animal.id}`))
+          } else {
             const newAnimal = {
                 name: animal.name,
                 breed: animal.breed,
-                locationId: locationId,
-                customerId: customerId
+                locationId: parseInt(animal.locationId),
+                customerId: parseInt(animal.customerId)
             }
 
             addAnimal(newAnimal)
-                .then(() => navigate("/animals"))
+              .then(() => navigate("/animals"))
+          }
         }
     }
 
     return (
         <form className="animalForm">
-          <h2 className="animalForm__title">New Animal</h2>
+          {
+            animalId ? 
+            <h2 className="animalForm__title">Update {animal.name}</h2> : 
+            <h2 className="animalForm__title">New Animal</h2>
+          }
           <fieldset>
             <div className="form-group">
               <label htmlFor="name">Animal name:</label>
@@ -90,9 +110,18 @@ export const AnimalForm = () => {
               </select>
             </div>
           </fieldset>
-          <button className="btn btn-primary" onClick={handleClickSaveAnimal}>
-            Save Animal
-              </button>
+          <button className="btn btn-primary"
+            disabled={isLoading}
+            onClick={(evt) => {
+              evt.preventDefault()
+              handleClickSaveAnimal(evt)
+          }}>
+            {
+              animalId ?
+              <>Update Animal</> :
+              <>Add Animal</>
+            }
+          </button>
         </form>
       )
 }

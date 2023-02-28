@@ -1,21 +1,29 @@
 import { useContext, useEffect, useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import { LocationContext } from "../location/LocationProvider"
 import { EmployeeContext } from "./EmployeeProvider"
 
 export const EmployeeForm = () => {
-    const { addEmployee } = useContext(EmployeeContext)
+    const { addEmployee, getEmployeeById, updateEmployee } = useContext(EmployeeContext)
     const { locations, getLocations } = useContext(LocationContext)
-
-    const [employee, setEmployee] = useState({
-        name: "",
-        locationId: 0
-    })
-
+    const [employee, setEmployee] = useState({})
+    const [isLoading, setIsLoading] = useState(true)
+    const { employeeId } = useParams()
     const navigate = useNavigate()
 
     useEffect(() => {
         getLocations()
+          .then(() => {
+            if (employeeId) {
+              getEmployeeById(employeeId)
+                .then(employee => {
+                  setEmployee(employee)
+                  setIsLoading(false)
+                })
+            } else {
+              setIsLoading(false)
+            }
+          })
     }, [])
 
     const handleControlledInputChange = (evt) => {
@@ -27,24 +35,36 @@ export const EmployeeForm = () => {
     const handleClickSaveEmployee = (evt) => {
         evt.preventDefault()
 
-        const locationId = parseInt(employee.locationId)
-
-        if (locationId === 0) {
+        if (parseInt(employee.locationId) === 0) {
             window.alert("Please select a location")
         } else {
+          setIsLoading(true)
+          if (employeeId) {
+            updateEmployee({
+              id: employee.id,
+              name: employee.name,
+              locationId: parseInt(employee.locationId)
+            })
+              .then(() => navigate(`/employees/detail/${employee.id}`))
+          } else {
             const newEmployee = {
                 name: employee.name,
-                locationId: locationId
+                locationId: parseInt(employee.locationId)
             }
 
             addEmployee(newEmployee)
-                .then(() => navigate("/employees"))
+              .then(() => navigate("/employees"))
+          }
         }
     }
 
     return (
         <form className="employeeForm">
-          <h2 className="employeeForm__title">New Employee</h2>
+          {
+            employeeId ?
+            <h2 className="employeeForm__title">Update {employee.name}</h2> :
+            <h2 className="employeeForm__title">New Employee</h2>
+          }
           <fieldset>
             <div className="form-group">
               <label htmlFor="name">Employee name:</label>
@@ -64,9 +84,18 @@ export const EmployeeForm = () => {
               </select>
             </div>
           </fieldset>
-          <button className="btn btn-primary" onClick={handleClickSaveEmployee}>
-            Hire Employee
-              </button>
+          <button className="btn btn-primary"
+            disabled={isLoading}
+            onClick={(evt) => {
+              evt.preventDefault()
+              handleClickSaveEmployee(evt)
+          }}>
+            {
+              employeeId ?
+              <>Save Employee</> :
+              <>Hire Employee</>
+            }
+          </button>
         </form>
       )
 }
