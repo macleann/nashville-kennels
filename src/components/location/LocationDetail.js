@@ -4,16 +4,14 @@ import "./Location.css"
 import { LocationContext } from "./LocationProvider"
 
 export const LocationDetail = () => {
-    const { locations } = useContext(LocationContext)
+    const { locations, getLocationById } = useContext(LocationContext)
     const { locationId } = useParams()
     const [location, setLocation] = useState({ employees: [], animals: [] })
     const navigate = useNavigate()
 
     useEffect(() => {
-        if (locations.length > 0) {
-            const thisLocation = locations.find(l => l.id === parseInt(locationId))
-            setLocation(thisLocation)
-        }
+        getLocationById(locationId)
+            .then(location => setLocation(location))
     }, [locationId])
 
     return <>

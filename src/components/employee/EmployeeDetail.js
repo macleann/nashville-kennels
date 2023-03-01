@@ -4,16 +4,14 @@ import "./Employee.css"
 import { EmployeeContext } from "./EmployeeProvider"
 
 export const EmployeeDetail = () => {
-    const { employees } = useContext(EmployeeContext)
+    const { employees, getEmployeeById } = useContext(EmployeeContext)
     const { employeeId } = useParams()
     const [employee, setEmployee] = useState({ location: {} })
     const navigate = useNavigate()
 
     useEffect(() => {
-        if (employees.length > 0) {
-            const thisEmployee = employees.find(e => e.id === parseInt(employeeId))
-            setEmployee(thisEmployee)
-        }
+        getEmployeeById(employeeId)
+            .then(employee => setEmployee(employee))
     }, [employeeId])
 
     return <>

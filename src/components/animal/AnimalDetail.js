@@ -4,16 +4,14 @@ import "./Animal.css"
 import { AnimalContext } from "./AnimalProvider"
 
 export const AnimalDetail = () => {
-    const { animals, releaseAnimal } = useContext(AnimalContext)
+    const { animals, getAnimalById, releaseAnimal } = useContext(AnimalContext)
     const { animalId } = useParams()
     const [animal, setAnimal] = useState({ location: {}, customer: {} })
     const navigate = useNavigate()
 
     useEffect(() => {
-        if (animals.length > 0) {
-            const thisAnimal = animals.find(a => a.id === parseInt(animalId))
-            setAnimal(thisAnimal)
-        }
+        getAnimalById(animalId)
+            .then(animal => setAnimal(animal))
     }, [animalId])
 
     const handleRelease = () => {
